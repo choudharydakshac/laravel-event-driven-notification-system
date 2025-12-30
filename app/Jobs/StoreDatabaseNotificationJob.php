@@ -29,13 +29,17 @@ class StoreDatabaseNotificationJob implements ShouldQueue
         //
     }
 
+    public function backoff(): array
+    {
+        return [10, 30, 60];
+    }
+
     /**
      * Execute the job.
      */
     public function handle(): void
     {
-        // Simulate DB notification
-        // Could be stored in notifications table or custom table
+        $this->log->increment('attempts');
 
         $this->log->update([
             'status' => 'sent',
@@ -49,4 +53,5 @@ class StoreDatabaseNotificationJob implements ShouldQueue
             'error_message' => $exception->getMessage(),
         ]);
     }
+
 }

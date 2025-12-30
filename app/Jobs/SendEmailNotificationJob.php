@@ -24,13 +24,17 @@ class SendEmailNotificationJob implements ShouldQueue
         protected NotificationLog $log
     ) {}
 
+    public function backoff(): array
+    {
+        return [10, 30, 60];
+    }
+
     /**
      * Execute the job.
      */
     public function handle(): void
     {
-        // Simulate email send (real mail later)
-        // Mail::to($this->log->user->email)->send(...);
+        $this->log->increment('attempts');
 
         $this->log->update([
             'status' => 'sent',
@@ -44,4 +48,5 @@ class SendEmailNotificationJob implements ShouldQueue
             'error_message' => $exception->getMessage(),
         ]);
     }
+
 }
