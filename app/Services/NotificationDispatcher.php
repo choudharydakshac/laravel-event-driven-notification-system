@@ -7,13 +7,16 @@ use App\Models\User;
 use App\Models\UserNotificationPreference;
 use App\Jobs\SendEmailNotificationJob;
 use App\Jobs\StoreDatabaseNotificationJob;
+use App\Services\RateLimitService;
 
 class NotificationDispatcher
 {
     /**
      * Create a new class instance.
      */
-    public function __construct()
+    public function __construct(
+        protected RateLimitService $rateLimiter
+    )
     {
         //
     }
@@ -23,6 +26,16 @@ class NotificationDispatcher
      */
     public function dispatch(User $user, string $event): void
     {
+        if ($this->rateLimiter->tooManyAttempts($user->id)) {
+            NotificationLog::create([
+                'user_id' => $user->id,
+                'event'   => $event,
+                'channel' => 'system',
+                'status'  => 'rate_limited',
+            ]);
+            return;
+        }
+        
         // Fetch enabled channels for user
         $channels = UserNotificationPreference::query()
             ->where('user_id', $user->id)
