@@ -304,7 +304,7 @@ This separation ensures **loose coupling**, **scalability**, and **easy extensib
 
 ## 🛠 Tech Stack
 
-* Laravel 11
+* Laravel 12
 * MySQL
 * Queue system (database / Redis-ready)
 * Laravel Events & Jobs
