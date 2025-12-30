@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\NotificationLog;
 use App\Models\User;
 use App\Models\UserNotificationPreference;
+use App\Jobs\SendEmailNotificationJob;
+use App\Jobs\StoreDatabaseNotificationJob;
 
 class NotificationDispatcher
 {
@@ -33,12 +35,18 @@ class NotificationDispatcher
 
         foreach ($channels as $channel) {
             // Log as pending
-            NotificationLog::create([
+            $log = NotificationLog::create([
                 'user_id' => $user->id,
                 'event'   => $event,
                 'channel' => $channel,
                 'status'  => 'pending',
             ]);
+
+            match ($channel) {
+                'email'    => SendEmailNotificationJob::dispatch($log),
+                'database' => StoreDatabaseNotificationJob::dispatch($log),
+                default    => null,
+            };
 
         }
     }
